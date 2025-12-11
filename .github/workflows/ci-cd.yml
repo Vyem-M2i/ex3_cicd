@@ -1,0 +1,62 @@
+name: TPGithub_CICD
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: "18"
+  DOCKER_IMAGE_NAME: virginiey-dockerhub/simple-calc-app
+
+jobs:
+
+  #-----[SHOW_INFOS]-----
+  show_infos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show application info
+        run: |
+          echo "Docker Hub username: ${{ vars.DOCKER_USERNAME }}"
+          echo "Docker Hub password (hidden): ${{ secrets.DOCKER_PASSWORD }}"
+
+  #-----[BUILD]-----
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      #-----[INSTALL NODE + CACHE NPM]-----
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      #-----[INSTALL DEPENDANCES]-----
+      - name: Install dependencies
+        run: npm ci
+
+      #-----[RUN TESTS]-----
+      - name: Run tests (Jest)
+        run: npm test -- --runInBand
+
+      #-----[BUILD APP SI BESOIN]-----
+      - name: Build application
+        run: npm run build --if-present
+
+      #-----[UPLOAD NODE ARTIFACTS]-----
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-build
+          path: |
+            .
+          retention-days: 1
