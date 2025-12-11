@@ -42,7 +42,7 @@ jobs:
 
       #-----[INSTALL DEPENDANCES]-----
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       #-----[RUN TESTS]-----
       - name: Run tests (Jest)
